@@ -348,8 +348,15 @@ func isEmptyValue(v reflect.Value) bool {
 		return v.Uint() == 0
 	case reflect.Float32, reflect.Float64:
 		return v.Float() == 0
-	case reflect.Interface, reflect.Pointer:
-		return v.IsNil()
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil() || isEmptyValue(v.Elem())
+	case reflect.Struct:
+		for i := v.NumField() - 1; i >= 0; i-- {
+			if !isEmptyValue(v.Field(i)) {
+				return false
+			}
+		}
+		return true
 	}
 	return false
 }
